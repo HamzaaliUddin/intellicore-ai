@@ -1,16 +1,12 @@
 import type { Request, Response } from "express";
+import { createAIProvider } from "../providers/ai-provider.factory.js";
 import { AIService } from "../services/ai.service.js";
-import { OpenAIProvider } from "../providers/openai.provider.js";
-import { MockAIProvider } from "../providers/mock-ai.provider.js";
 
+const provider = createAIProvider();
 
-// const aiService = new AIService(new OpenAIProvider());
-const aiService = new AIService(new MockAIProvider());
+const aiService = new AIService(provider);
 
-export const chat = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const chat = async (req: Request, res: Response): Promise<void> => {
   try {
     const { message } = req.body;
 

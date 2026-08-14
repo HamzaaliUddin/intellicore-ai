@@ -4,8 +4,9 @@ const port = Number(process.env.PORT || 3000);
 
 const openAIAPIKey = process.env.OPENAI_API_KEY;
 const openAIModel = process.env.OPENAI_MODEL || "gpt-5.6";
+const aiProvider = process.env.AI_PROVIDER || "mock";
 
-if (!openAIAPIKey) {
+if (aiProvider === "openai" && !openAIAPIKey) {
   throw new Error("OPENAI_API_KEY is not configured");
 }
 
@@ -13,4 +14,5 @@ export const env = {
   port,
   openAIAPIKey,
   openAIModel,
+  aiProvider,
 };
