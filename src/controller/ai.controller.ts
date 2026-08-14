@@ -25,3 +25,29 @@ export const chat = async (req: Request, res: Response): Promise<void> => {
     });
   }
 };
+
+export const analyzeSupport = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { message } = req.body as ChatInput;
+
+    const analysis =
+      await aiService.analyzeSupportMessage(
+        message
+      );
+
+    res.status(200).json({
+      success: true,
+      data: analysis,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to analyze support message",
+    });
+  }
+};
