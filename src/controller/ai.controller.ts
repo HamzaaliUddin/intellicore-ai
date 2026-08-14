@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { createAIProvider } from "../providers/ai-provider.factory.js";
 import { type ChatInput } from "../schemas/ai.schema.js";
 import { AIService } from "../services/ai.service.js";
@@ -7,9 +7,14 @@ const provider = createAIProvider();
 
 const aiService = new AIService(provider);
 
-export const chat = async (req: Request, res: Response): Promise<void> => {
+export const chat = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   try {
     const { message } = req.body as ChatInput;
+
     const answer = await aiService.generateResponse(message);
 
     res.status(200).json({
@@ -17,37 +22,25 @@ export const chat = async (req: Request, res: Response): Promise<void> => {
       answer,
     });
   } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to generate AI response",
-    });
+    next(error);
   }
 };
 
 export const analyzeSupport = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { message } = req.body as ChatInput;
 
-    const analysis =
-      await aiService.analyzeSupportMessage(
-        message
-      );
+    const analysis = await aiService.analyzeSupportMessage(message);
 
     res.status(200).json({
       success: true,
       data: analysis,
     });
   } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to analyze support message",
-    });
+    next(error);
   }
 };

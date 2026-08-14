@@ -1,5 +1,6 @@
 import express from "express";
 import { env } from "./config/env.js";
+import { errorHandler } from "./middlewares/errors.middleware.js";
 import { route } from "./routes/route.js";
 
 export const app = express();
@@ -14,6 +15,7 @@ app.get("/health", (req, res) => {
 });
 
 route(app);
+app.use(errorHandler);
 
 app.listen(env.port, () => {
   console.log(`Server running on http://localhost:${env.port}`);
