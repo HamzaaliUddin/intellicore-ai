@@ -73,3 +73,22 @@ export const streamChat = async (
     next(error);
   }
 };
+
+export const toolChat = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const { message } = req.body as ChatInput;
+
+    const result = await aiService.handleToolRequest(message);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

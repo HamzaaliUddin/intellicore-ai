@@ -1,6 +1,8 @@
 import OpenAI from "openai";
 import { env } from "../config/env.js";
 import { AIProviderError } from "../errors/ai-provider.error.js";
+import type { AIProviderResponse } from "../tools/tool-call.types.js";
+import { getOrderToolDefinition } from "../tools/tool-definitions.js";
 import type { AIProvider } from "./ai-provider.interface.js";
 
 export class OpenAIProvider implements AIProvider {
@@ -13,7 +15,7 @@ export class OpenAIProvider implements AIProvider {
       maxRetries: 2,
     });
   }
-
+  
   async generateText(message: string): Promise<string> {
     const startedAt = Date.now();
 
@@ -113,6 +115,62 @@ export class OpenAIProvider implements AIProvider {
       this.handleError(error);
     }
   }
+
+  async requestTool(message: string): Promise<AIProviderResponse> {
+    try {
+      const response = await this.client.responses.create({
+        model: env.openAIModel,
+        input: message,
+        tools: [getOrderToolDefinition],
+      });
+
+      for (const item of response.output) {
+        if (item.type !== "function_call") {
+          continue;
+        }
+
+        return {
+          type: "tool_call",
+          contextId: response.id,
+          callId: item.call_id,
+          name: item.name,
+          arguments: JSON.parse(item.arguments),
+        };
+      }
+
+      return {
+        type: "text",
+        text: response.output_text,
+      };
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+  async completeToolCall(
+    contextId: string,
+    callId: string,
+    result: unknown,
+  ): Promise<string> {
+    try {
+      const response = await this.client.responses.create({
+        model: env.openAIModel,
+        previous_response_id: contextId,
+        tools: [getOrderToolDefinition],
+        input: [
+          {
+            type: "function_call_output",
+            call_id: callId,
+            output: JSON.stringify(result),
+          },
+        ],
+      });
+
+      return response.output_text;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
   private handleError(error: unknown): never {
     if (error instanceof OpenAI.AuthenticationError) {
       throw new AIProviderError(
