@@ -28,4 +28,10 @@ export class AIService {
 
     return result.data;
   }
+
+  streamResponse(message: string): AsyncIterable<string> {
+    const prompt = buildSupportPrompt(message);
+
+    return this.provider.streamText(prompt);
+  }
 }

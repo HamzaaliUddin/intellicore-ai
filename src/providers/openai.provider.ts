@@ -96,6 +96,23 @@ export class OpenAIProvider implements AIProvider {
       this.handleError(error);
     }
   }
+  async *streamText(message: string): AsyncIterable<string> {
+    try {
+      const stream = await this.client.responses.create({
+        model: env.openAIModel,
+        input: message,
+        stream: true,
+      });
+
+      for await (const event of stream) {
+        if (event.type === "response.output_text.delta") {
+          yield event.delta;
+        }
+      }
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
   private handleError(error: unknown): never {
     if (error instanceof OpenAI.AuthenticationError) {
       throw new AIProviderError(

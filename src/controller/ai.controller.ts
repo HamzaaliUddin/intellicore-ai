@@ -44,3 +44,32 @@ export const analyzeSupport = async (
     next(error);
   }
 };
+
+export const streamChat = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const { message } = req.body as ChatInput;
+
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+
+    res.setHeader("Cache-Control", "no-cache");
+
+    const stream = aiService.streamResponse(message);
+
+    for await (const chunk of stream) {
+      res.write(chunk);
+    }
+
+    res.end();
+  } catch (error) {
+    if (res.headersSent) {
+      res.end();
+      return;
+    }
+
+    next(error);
+  }
+};
