@@ -15,19 +15,44 @@ export class OpenAIProvider implements AIProvider {
   }
 
   async generateText(message: string): Promise<string> {
+    const startedAt = Date.now();
+
     try {
       const response = await this.client.responses.create({
         model: env.openAIModel,
         input: message,
       });
 
+      const durationMs = Date.now() - startedAt;
+
+      console.log({
+        provider: "openai",
+        model: env.openAIModel,
+        inputTokens: response.usage?.input_tokens,
+        outputTokens: response.usage?.output_tokens,
+        totalTokens: response.usage?.total_tokens,
+        durationMs,
+        status: "success",
+      });
+
       return response.output_text;
     } catch (error) {
+      const durationMs = Date.now() - startedAt;
+
+      console.error({
+        provider: "openai",
+        model: env.openAIModel,
+        durationMs,
+        status: "failed",
+      });
+
       this.handleError(error);
     }
   }
 
   async generateJSON(message: string): Promise<unknown> {
+    const startedAt = Date.now();
+
     try {
       const response = await this.client.responses.create({
         model: env.openAIModel,
@@ -45,8 +70,29 @@ export class OpenAIProvider implements AIProvider {
         input: message,
       });
 
+      const durationMs = Date.now() - startedAt;
+
+      console.log({
+        provider: "openai",
+        model: env.openAIModel,
+        inputTokens: response.usage?.input_tokens,
+        outputTokens: response.usage?.output_tokens,
+        totalTokens: response.usage?.total_tokens,
+        durationMs,
+        status: "success",
+      });
+
       return JSON.parse(response.output_text);
     } catch (error) {
+      const durationMs = Date.now() - startedAt;
+
+      console.error({
+        provider: "openai",
+        model: env.openAIModel,
+        durationMs,
+        status: "failed",
+      });
+
       this.handleError(error);
     }
   }
